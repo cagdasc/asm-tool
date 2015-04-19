@@ -1,6 +1,9 @@
 # asm-tool
 Android apk assemble and disassemble tool.
 
+#Prerequest
+	wget
+	unzip
 #Usage
 	Important: First you must be export APPNAME value!!
 	Disassemble: ./asm-tool -t dasm -a com.example.apk
