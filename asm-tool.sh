@@ -15,13 +15,13 @@ if [[ ! -e /usr/local/bin/apktool && ! -e /usr/bin/apktool ]]; then
 	if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
 	 	#statements
 	 	HOST=`uname`
-	 	ARCH = `uname -m`
+	 	ARCH=`uname -m`
 	 	if [[ "$HOST" == "Linux" && "$ARCH" == "x86_64" ]]; then
 	 		#statements
 	 		echo "Make sure you have the 32bit libraries (ia32-libs) downloaded and installed by your linux package manager, if you are on a 64bit unix system."
 	 	fi
-	 	wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.0rc4.jar -O $HOME
-	 	mv apktool_2.0.0rc4.jar /usr/local/bin/apktool.jar
+	 	wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.0rc4.jar -O "$HOME/apktool_2.0.0rc4.jar"
+	 	mv "$HOME/apktool_2.0.0rc4.jar" /usr/local/bin/apktool.jar
 	 	wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/osx/apktool -O /usr/local/bin/apktool
 	 	chmod +x /usr/local/bin/apktool.jar
 	 	chmod +x /usr/local/bin/apktool
@@ -35,7 +35,7 @@ if [[ ! -e /usr/local/bin/d2j-apk-sign.sh && ! -e /usr/bin/d2j-apk-sign.sh &&
 	! -e /usr/local/bin/d2j-apk-sign && ! -e /usr/bin/d2j-apk-sign ]]; then
 	#statements
 	echo -e "$ERROR Dex2Jar is not exist!!"
-	read -p  "Do you want to install Apktool?[y/N]:" choice
+	read -p  "Do you want to install Dex2Jar?[y/N]:" choice
 
 	if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
 	 	#statements
