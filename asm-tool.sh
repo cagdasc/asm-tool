@@ -1,17 +1,22 @@
 #!/bin/bash
 
-ERROR="[ERROR]:"
-WARNING="[WARNING]:"
+SUCCESS_COLOR='\033[0;32m'
+EW_COLOR='\033[0;31m'
+NC='\033[0m'
+
+ERROR="${EW_COLOR}[ERROR]:${NC}"
+WARNING="${EW_COLOR}[WARNING]:${NC}"
 
 if [[ ! -e /usr/local/bin/apktool && ! -e /usr/bin/apktool ]]; then
 	#statements
-	echo "$ERROR Apktool is not exist!!"
+	echo -e "$ERROR Apktool is not exist!!"
 	read -p  "Do you want to install Apktool?[y/N]:" choice
 
 	if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
 	 	#statements
 	 	HOST=`uname`
-	 	if [[ "$HOST" == "Linux" ]]; then
+	 	ARCH = `uname -m`
+	 	if [[ "$HOST" == "Linux" && "$ARCH" == "x86_64" ]]; then
 	 		#statements
 	 		echo "Make sure you have the 32bit libraries (ia32-libs) downloaded and installed by your linux package manager, if you are on a 64bit unix system."
 	 	fi
@@ -29,18 +34,24 @@ fi
 if [[ ! -e /usr/local/bin/d2j-apk-sign.sh && ! -e /usr/bin/d2j-apk-sign.sh && 
 	! -e /usr/local/bin/d2j-apk-sign && ! -e /usr/bin/d2j-apk-sign ]]; then
 	#statements
-	echo "$ERROR Dex2Jar is not exist!!"
+	echo -e "$ERROR Dex2Jar is not exist!!"
 	read -p  "Do you want to install Apktool?[y/N]:" choice
 
 	if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
 	 	#statements
-	 	wget http://heanet.dl.sourceforge.net/project/dex2jar/dex2jar-0.0.9.15.zip -O $HOME"/dex2jar-0.0.9.15.zip"
-	 	unzip dex2jar-0.0.9.15.zip -d $HOME
+	 	wget http://heanet.dl.sourceforge.net/project/dex2jar/dex2jar-0.0.9.15.zip -O "$HOME/dex2jar-0.0.9.15.zip"
+	 	unzip "$HOME/dex2jar-0.0.9.15.zip" -d $HOME
 	 	D2J_PATH="$HOME/dex2jar-0.0.9.15"
+	 	if [[ ! -e /opt ]]; then
+	 		#statements
+	 		mkdir /opt
+	 	fi
+	 	sudo mv $D2J_PATH /opt
+	 	D2J_PATH="/opt/dex2jar-0.0.9.15"
 	 	chmod -R 755 "$D2J_PATH"
 	 	for f in $(ls $D2J_PATH |grep .sh); do
 	 		#statements
-	 		echo "Linking $f to /usr/local/bin/$f"
+	 		echo -e "${SUCCESS_COLOR}Linking $f to /usr/local/bin/$f${NC}"
 	 		ln -s "$D2J_PATH/$f" /usr/local/bin/$f
 	 	done
 	 	rm $HOME/dex2jar-0.0.9.15.zip
@@ -52,7 +63,7 @@ fi
 
 if [[ -z "$APPNAME" ]]; then
 	#statements
-	echo "$ERROR APPNAME variable is null!! You need to export APPNAME!!"
+	echo -e "$ERROR APPNAME variable is null!! You need to export APPNAME!!"
 	exit 0
 fi
 
@@ -109,7 +120,7 @@ while [[ $# > 0 ]]; do
 		shift
 		;;
 		*)
-		echo "Invalid command."
+		echo -e "$ERROR Invalid command."
 		usage
 		;;
 	esac
@@ -119,15 +130,15 @@ done
 if [[ "$TYPE" == "asm" ]]; then
 	if [[ -z "$PACKAGE_NAME" ]]; then
 		#statements
-		echo "$WARNING If you want to uninstall app automatically from device, need to set PACKAGE_NAME value!!"
+		echo -e "$WARNING If you want to uninstall app automatically from device, need to set PACKAGE_NAME value!!"
 	else
-		echo "Application is uninstalling..."
-		result=`adb uninstall $PACKAGE_NAME`
-		if [[ "$result" == "Success" ]]; then
+		echo -e "${SUCCESS_COLOR}Application is uninstalling...${NC}"
+		RESULT=`adb uninstall $PACKAGE_NAME`
+		if [[ "$RESULT" == "Success" ]]; then
 			#statements
-			echo "Application uninstall Success!!"
+			echo -e "${SUCCESS_COLOR}Application uninstall Successful!!"
 		else
-			echo "$WARNING Application uninstall process Failured!!"
+			echo -e "$WARNING Application uninstall process Failured!!"
 		fi
 	fi
 
@@ -140,23 +151,23 @@ if [[ "$TYPE" == "asm" ]]; then
 
 	if [[ -e "$SIGNED" ]]; then
 		#statements
-		echo "Found a signed apk. REMOVED!!"
+		echo -e "${SUCCESS_COLOR}Found a signed apk. REMOVED!!${NC}"
 		rm $SIGNED
 		echo "-------------------------------"
 	fi
 
-	echo "Building new apk..."
+	echo -e "${SUCCESS_COLOR}Building new apk...${NC}"
 	apktool b $APPNAME -o $UNSIGNED
 	echo "-------------------------------"
 
-	echo "Signed apk creating..."
+	echo -e "${SUCCESS_COLOR}Signed apk creating...${NC}"
 	d2j-apk-sign.sh -f $UNSIGNED -o $SIGNED
 	rm $UNSIGNED
 	echo "-------------------------------"
 
 	echo "Press [ENTER] the install apk..."
 	read
-	echo "Apk installing..."
+	echo -e "${SUCCESS_COLOR}Apk installing...${NC}"
 	adb install $SIGNED
 
 	echo "Finish!!"
@@ -166,12 +177,12 @@ elif [[ "$TYPE" == "dasm" ]]; then
 	#statements
 	if [[ -z "$APKNAME" ]]; then
 		#statements
-		echo "You need to enter apk name with first param"
-		echo "Usage: dasm-apk name_of.apk"
+		usage
+		echo -e "$ERROR APKNAME variable is null!! You need to export APKNAME!!"
 		exit 0
 	fi
 
-	echo "Apk is decompiling..."
+	echo -e "${SUCCESS_COLOR}Apk is decompiling...${NC}"
 	apktool d $APKNAME -o $APPNAME
 	exit 0
 
