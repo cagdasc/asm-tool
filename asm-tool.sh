@@ -7,6 +7,24 @@ NC='\033[0m'
 ERROR="${EW_COLOR}[ERROR]:${NC}"
 WARNING="${EW_COLOR}[WARNING]:${NC}"
 
+OUT_DIR="out"
+BUILD_DIR="build"
+
+function usage() {
+	echo ""
+	echo "*************************************"
+	echo "****** Android Assembling Tool ******"
+	echo "Create a signed apk file and install "
+	echo "connected device. v1.0"
+	echo "*************************************"
+	echo ""
+	echo "smali/baksmali tool added. Mode 0 represent smali/baksmali tool, mode 1 apktool."
+	echo "You need to use [mode] and [build] options together."
+	echo ""
+	echo "Usage: asm-tool -t [asm|dasm], -a [apk file name], -m[0|1], -b[build number], -h|--help"
+	exit 0
+}
+
 if [[ ! -e /usr/local/bin/apktool && ! -e /usr/bin/apktool ]]; then
 	#statements
 	echo -e "$ERROR Apktool is not exist!!"
@@ -61,39 +79,6 @@ if [[ ! -e /usr/local/bin/d2j-apk-sign.sh && ! -e /usr/bin/d2j-apk-sign.sh &&
 	 fi 
 fi
 
-if [[ -z "$APPNAME" ]]; then
-	#statements
-	echo -e "$ERROR APPNAME variable is null!! You need to export APPNAME!!"
-	exit 0
-fi
-
-function usage() {
-	echo ""
-	echo "*************************************"
-	echo "****** Android Assembling Tool ******"
-	echo "Create a signed apk file and install "
-	echo "connected device. v0.1"
-	echo "*************************************"
-	echo ""
-	echo "Usage: asm-apk -t [asm|dasm], -a [apk file name] , -h|--help"
-	exit 0
-}
-
-function usage_example() {
-	echo ""
-	echo "*************************************"
-	echo "****** Android Assembling Tool ******"
-	echo "Create a signed apk file and install "
-	echo "connected device. v0.1"
-	echo "*************************************"
-	echo ""
-	echo -e "Requirement Tools:\n- Apktool\n- Dex2Jar"
-	echo "Usage: asm-apk -t [asm|dasm], -a [apk file name] , -h|--help"
-	echo ""
-	echo -e "Example:\n\tImportant: First you must be export APPNAME value!!\n\tDisassemble: asm-tool -t dasm -a com.example.apk\n\tAssemble: asm-tool -t asm"
-	exit 0
-}
-
 if [[ $# -eq 0 ]]; then
 	#statements
 	usage
@@ -115,8 +100,20 @@ while [[ $# > 0 ]]; do
 		APKNAME="$2"
 		shift
 		;;
+		-m)
+		MODE="$2"
+		if [[ -z "$MODE" ]]; then
+			#statements
+			usage
+		fi
+		shift
+		;;
+		-b)
+		BUILDNUM="$2"
+		shift
+		;;
 		-h|--help)
-		usage_example
+		usage
 		shift
 		;;
 		*)
@@ -128,6 +125,12 @@ while [[ $# > 0 ]]; do
 done
 
 if [[ "$TYPE" == "asm" ]]; then
+	if [[ -z "$APPNAME" ]]; then
+		#statements
+		echo -e "$ERROR APPNAME variable is null!! You need to export APPNAME!!"
+		exit 0
+	fi
+
 	if [[ -z "$PACKAGE_NAME" ]]; then
 		#statements
 		echo -e "$WARNING If you want to uninstall app automatically from device, need to set PACKAGE_NAME value!!"
@@ -144,46 +147,90 @@ if [[ "$TYPE" == "asm" ]]; then
 
 	echo "-------------------------------"
 
-	UNSIGNED=$APPNAME".apk"
-	SIGNED=$APPNAME"_signed.apk"
+	UNSIGNED=$APPNAME"_"$BUILDNUM".apk"
+	SIGNED=$APPNAME"_"$BUILDNUM"_signed.apk"
 
 	SIGNED_PATH=`pwd`"/$SIGNED"
 
-	if [[ -e "$SIGNED" ]]; then
+	if [[ "$MODE" == "0" ]]; then
 		#statements
-		echo -e "${SUCCESS_COLOR}Found a signed apk. REMOVED!!${NC}"
-		rm $SIGNED
+		echo -e "${SUCCESS_COLOR}Creating new dex file...${NC}"
+		smali -o "$BUILD_DIR/classes_$BUILDNUM.dex" $OUT_DIR
+		cp "$BUILD_DIR/classes_$BUILDNUM.dex" "$BUILD_DIR/$APPNAME"
+		mv "$BUILD_DIR/$APPNAME/classes_$BUILDNUM.dex" "$BUILD_DIR/$APPNAME/classes.dex"
+		OLD_PATH=`pwd`
+		cd "$BUILD_DIR/$APPNAME"
+		zip -r temp.zip . -x ".*" && mv temp.zip "../$UNSIGNED"
+		rm "classes.dex"
+		cd $OLD_PATH
+		echo -e "${SUCCESS_COLOR}Signed apk creating...${NC}"
+		d2j-apk-sign.sh -f "$BUILD_DIR/$UNSIGNED" -o "$BUILD_DIR/$SIGNED"
+	elif [[ "$MODE" == "1" ]]; then
+		#statements
+		echo -e "${SUCCESS_COLOR}Building new apk...${NC}"
+		apktool b $APPNAME -o $UNSIGNED
 		echo "-------------------------------"
+
+		echo -e "${SUCCESS_COLOR}Signed apk creating...${NC}"
+		d2j-apk-sign.sh -f $UNSIGNED -o $SIGNED
+		rm $UNSIGNED
+		echo "-------------------------------"
+	else
+		usage
+		exit 0
 	fi
 
-	echo -e "${SUCCESS_COLOR}Building new apk...${NC}"
-	apktool b $APPNAME -o $UNSIGNED
-	echo "-------------------------------"
+	read -p "Do you want to install apk?[y/N]:" choice
 
-	echo -e "${SUCCESS_COLOR}Signed apk creating...${NC}"
-	d2j-apk-sign.sh -f $UNSIGNED -o $SIGNED
-	rm $UNSIGNED
-	echo "-------------------------------"
-
-	echo "Press [ENTER] the install apk..."
-	read
-	echo -e "${SUCCESS_COLOR}Apk installing...${NC}"
-	adb install $SIGNED
+	if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
+	 	#statements
+	 	echo -e "${SUCCESS_COLOR}Apk installing...${NC}"
+		adb install $SIGNED
+	fi
 
 	echo "Finish!!"
 	exit 0
 
 elif [[ "$TYPE" == "dasm" ]]; then
 	#statements
-	if [[ -z "$APKNAME" ]]; then
+
+	if [[ -z "$APPNAME" ]]; then
 		#statements
-		usage
-		echo -e "$ERROR APKNAME variable is null!! You need to export APKNAME!!"
+		echo -e "$ERROR APPNAME variable is null!! You need to export APPNAME!!"
 		exit 0
 	fi
 
-	echo -e "${SUCCESS_COLOR}Apk is decompiling...${NC}"
-	apktool d $APKNAME -o $APPNAME
+	if [[ -z "$APKNAME" ]]; then
+		#statements
+		usage
+		#echo -e "$ERROR APKNAME variable is null!! You need to export APKNAME!!"
+		exit 0
+	fi
+
+	if [[ "$MODE" == "0" ]]; then
+		#statements
+		mkdir $OUT_DIR $BUILD_DIR
+		cp $APKNAME "$APPNAME.zip"
+		echo -e "${SUCCESS_COLOR}Apk file is extracting...${NC}"
+		unzip "$APPNAME.zip" -d $APPNAME
+		rm -rf "$APPNAME/META-INF"
+		cp -r $APPNAME $BUILD_DIR
+		rm "$BUILD_DIR/$APPNAME/classes.dex"
+		echo -e "${SUCCESS_COLOR}DEX file is converting to smali format.${NC}"
+		baksmali -o $OUT_DIR $APPNAME/classes.dex
+		echo -e "${SUCCESS_COLOR}Decompiling completed!!${NC}"
+	elif [[ "$MODE" == "1" ]]; then
+		#statements
+		JAR_NAME="$APPNAME.jar"
+		echo -e "${SUCCESS_COLOR}Apk is decompiling...${NC}"
+		apktool d $APKNAME -o $APPNAME
+		echo -e "${SUCCESS_COLOR}Apk to jar...${NC}"
+		d2j-dex2jar.sh $APKNAME -o $JAR_NAME
+		echo -e "${SUCCESS_COLOR}Jar file is verifying...${NC}"
+		d2j-asm-verify.sh $JAR_NAME
+	else
+		usage
+	fi
 	exit 0
 
 fi
