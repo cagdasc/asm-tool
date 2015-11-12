@@ -185,7 +185,7 @@ if [[ "$TYPE" == "asm" ]]; then
 	if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
 	 	#statements
 	 	echo -e "${SUCCESS_COLOR}Apk installing...${NC}"
-		adb install $SIGNED
+		adb install "$BUILD_DIR/$SIGNED"
 	fi
 
 	echo "Finish!!"
