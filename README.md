@@ -6,9 +6,11 @@ Android apk assemble and disassemble tool.
 	unzip
 
 #Structure
-	**APPNAME/** -> Contains unpackaged apk file.
-	**out/** -> Contains .smali files converted from dex file.
-	**build/** -> Contains builded and signed apk files and dex files.
+<pre>
+<b>APPNAME/</b> -> Contains unpackaged apk file.
+<b>out/</b> -> Contains .smali files converted from dex file.
+<b>build/</b> -> Contains builded and signed apk files and dex files.
+</pre>
 
 #Usage
 <pre>
