@@ -11,14 +11,16 @@ Android apk assemble and disassemble tool.
 	**build/** -> Contains builded and signed apk files and dex files.
 
 #Usage
-	**Important:** First you must be export APPNAME value!!
-	$ export APPNAME=appname_you_want
+<pre>
+<b>Important:</b> First you must be export APPNAME value!!
+$ export APPNAME=appname_you_want
 
-	**Important:** If you want to auto uninstall and install apk with adb, you need to export PACKAGE_NAME value. PACKAGE_NAME must be original name of the application package.
-	$ export PACKAGE_NAME=com.example
+<b>Important:</b> If you want to auto uninstall and install apk with adb, you need to export PACKAGE_NAME value. PACKAGE_NAME must be original name of the application package.
+$ export PACKAGE_NAME=com.example
 
-	**Disassemble:** ./asm-tool -t dasm -a com.example.apk -m[0|1]
-	**Assemble:** ./asm-tool -t asm -b[build_number]
+<b>Disassemble:</b> ./asm-tool -t dasm -a com.example.apk -m[0|1]
+<b>Assemble:</b> ./asm-tool -t asm -b[build_number]
+</pre>
 
 #License
 	Copyright (C) 2015  Çağdaş Çağlak
