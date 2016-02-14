@@ -39,10 +39,10 @@ if [[ ! -e /usr/local/bin/apktool && ! -e /usr/bin/apktool ]]; then
 	 		echo "Make sure you have the 32bit libraries (ia32-libs) downloaded and installed by your linux package manager, if you are on a 64bit unix system."
 	 	fi
 	 	wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.0rc4.jar -O "$HOME/apktool_2.0.0rc4.jar"
-	 	mv "$HOME/apktool_2.0.0rc4.jar" /usr/local/bin/apktool.jar
-	 	wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/osx/apktool -O /usr/local/bin/apktool
-	 	chmod +x /usr/local/bin/apktool.jar
-	 	chmod +x /usr/local/bin/apktool
+	 	sudo mv "$HOME/apktool_2.0.0rc4.jar" /usr/local/bin/apktool.jar
+	 	sudo wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/osx/apktool -O /usr/local/bin/apktool
+	 	sudo chmod +x /usr/local/bin/apktool.jar
+	 	sudo chmod +x /usr/local/bin/apktool
 	 else
 	 	echo "Good Bye!!"
 	 	exit 0
@@ -62,15 +62,15 @@ if [[ ! -e /usr/local/bin/d2j-apk-sign.sh && ! -e /usr/bin/d2j-apk-sign.sh &&
 	 	D2J_PATH="$HOME/dex2jar-0.0.9.15"
 	 	if [[ ! -e /opt ]]; then
 	 		#statements
-	 		mkdir /opt
+	 		sudo mkdir /opt
 	 	fi
 	 	sudo mv $D2J_PATH /opt
 	 	D2J_PATH="/opt/dex2jar-0.0.9.15"
-	 	chmod -R 755 "$D2J_PATH"
+	 	sudo chmod -R 755 "$D2J_PATH"
 	 	for f in $(ls $D2J_PATH |grep .sh); do
 	 		#statements
 	 		echo -e "${SUCCESS_COLOR}Linking $f to /usr/local/bin/$f${NC}"
-	 		ln -s "$D2J_PATH/$f" /usr/local/bin/$f
+	 		sudo ln -s "$D2J_PATH/$f" /usr/local/bin/$f
 	 	done
 	 	rm $HOME/dex2jar-0.0.9.15.zip
 	 else
