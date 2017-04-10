@@ -38,9 +38,9 @@ if [[ ! -e /usr/local/bin/apktool && ! -e /usr/bin/apktool ]]; then
 	 		#statements
 	 		echo "Make sure you have the 32bit libraries (ia32-libs) downloaded and installed by your linux package manager, if you are on a 64bit unix system."
 	 	fi
-	 	wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.0rc4.jar -O "$HOME/apktool_2.0.0rc4.jar"
-	 	sudo mv "$HOME/apktool_2.0.0rc4.jar" /usr/local/bin/apktool.jar
-	 	sudo wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/osx/apktool -O /usr/local/bin/apktool
+	 	wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.2.2.jar -O "$HOME/apktool_2.2.2.jar"
+	 	sudo mv "$HOME/apktool_2.2.2.jar" /usr/local/bin/apktool.jar
+	 	sudo wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool -O /usr/local/bin/apktool
 	 	sudo chmod +x /usr/local/bin/apktool.jar
 	 	sudo chmod +x /usr/local/bin/apktool
 	 else
@@ -49,30 +49,30 @@ if [[ ! -e /usr/local/bin/apktool && ! -e /usr/bin/apktool ]]; then
 	 fi 
 fi
 
-if [[ ! -e /usr/local/bin/d2j-apk-sign.sh && ! -e /usr/bin/d2j-apk-sign.sh && 
-	! -e /usr/local/bin/d2j-apk-sign && ! -e /usr/bin/d2j-apk-sign ]]; then
+if [[ ! -e /usr/local/bin/d2j-dex2jar.sh && ! -e /usr/bin/d2j-dex2jar.sh && 
+		! -e /usr/local/bin/d2j-dex2jar && ! -e /usr/bin/d2j-dex2jar ]]; then
 	#statements
 	echo -e "$ERROR Dex2Jar is not exist!!"
 	read -p  "Do you want to install Dex2Jar?[y/N]:" choice
 
 	if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
 	 	#statements
-	 	wget http://heanet.dl.sourceforge.net/project/dex2jar/dex2jar-0.0.9.15.zip -O "$HOME/dex2jar-0.0.9.15.zip"
-	 	unzip "$HOME/dex2jar-0.0.9.15.zip" -d $HOME
-	 	D2J_PATH="$HOME/dex2jar-0.0.9.15"
+	 	wget https://bitbucket.org/pxb1988/dex2jar/downloads/dex2jar-2.0.zip -O "$HOME/dex2jar-2.0.zip"
+	 	unzip "$HOME/dex2jar-2.0.zip" -d $HOME
+	 	D2J_PATH="$HOME/dex2jar-2.0"
 	 	if [[ ! -e /opt ]]; then
 	 		#statements
 	 		sudo mkdir /opt
 	 	fi
 	 	sudo mv $D2J_PATH /opt
-	 	D2J_PATH="/opt/dex2jar-0.0.9.15"
+	 	D2J_PATH="/opt/dex2jar-2.0"
 	 	sudo chmod -R 755 "$D2J_PATH"
 	 	for f in $(ls $D2J_PATH |grep .sh); do
 	 		#statements
 	 		echo -e "${SUCCESS_COLOR}Linking $f to /usr/local/bin/$f${NC}"
 	 		sudo ln -s "$D2J_PATH/$f" /usr/local/bin/$f
 	 	done
-	 	rm $HOME/dex2jar-0.0.9.15.zip
+	 	rm $HOME/dex2jar-2.0.zip
 	 else
 	 	echo "Good Bye!!"
 	 	exit 0
@@ -155,7 +155,7 @@ if [[ "$TYPE" == "asm" ]]; then
 	if [[ "$MODE" == "0" ]]; then
 		#statements
 		echo -e "${SUCCESS_COLOR}Creating new dex file...${NC}"
-		smali -o "$BUILD_DIR/classes_$BUILDNUM.dex" $OUT_DIR
+		d2j-smali.sh -o "$BUILD_DIR/classes_$BUILDNUM.dex" $OUT_DIR
 		cp "$BUILD_DIR/classes_$BUILDNUM.dex" "$BUILD_DIR/$APPNAME"
 		mv "$BUILD_DIR/$APPNAME/classes_$BUILDNUM.dex" "$BUILD_DIR/$APPNAME/classes.dex"
 		OLD_PATH=`pwd`
@@ -217,7 +217,7 @@ elif [[ "$TYPE" == "dasm" ]]; then
 		cp -r $APPNAME $BUILD_DIR
 		rm "$BUILD_DIR/$APPNAME/classes.dex"
 		echo -e "${SUCCESS_COLOR}DEX file is converting to smali format.${NC}"
-		baksmali -o $OUT_DIR $APPNAME/classes.dex
+		d2j-baksmali.sh -o $OUT_DIR $APPNAME/classes.dex
 		echo -e "${SUCCESS_COLOR}Decompiling completed!!${NC}"
 	elif [[ "$MODE" == "1" ]]; then
 		#statements
